@@ -1,1 +1,13 @@
-QMX.zip
+*.exe
+
+*.ico
+
+*.h
+
+*.res
+
+qmx_engine.exe
+
+qmx_setup.exe
+
+d3dx12.h

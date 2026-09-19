@@ -1,28 +1,27 @@
 #ifndef UNICODE
 #define UNICODE
 #endif 
-// --- Bibliotecas ---
+// --- Libs ---
 #include <windows.h>
 #include <d3d12.h>
-#include "d3dx12.h"
 #include <dxgi1_6.h>
 #include <d3dcompiler.h>
 #include <string>
 #pragma comment(lib, "d3dcompiler.lib")
-// --- Estrutura de Vértice ---
+// --- Vertex Structure ---
 struct Vertex {
     float position[3];
     float color[4];
 };
-// --- Parte de FPS e DeltaTime ---
-// Variáveis de Tempo e FPS
+// --- FPS and DeltaTime---
+// Variables: FPS and DeltaTime
 LARGE_INTEGER g_timerFrequency;
 LARGE_INTEGER g_lastTime;
 float g_deltaTime = 0.0f;
 UINT g_fpsFrameCount = 0;
 float g_fpsTimeAccumulator = 0.0f;
 float g_currentFPS = 0.0f;
-// --- Ponteiros ---
+// --- Pointers ---
 IDXGIFactory4* g_factory = nullptr;
 ID3D12Device*  g_device  = nullptr;
 ID3D12CommandQueue* g_cmdQueue = nullptr;
@@ -40,11 +39,10 @@ ID3DBlob* g_vsBlob = nullptr;
 ID3DBlob* g_psBlob = nullptr;
 ID3D12RootSignature* g_rootSignature = nullptr;
 ID3D12PipelineState* g_pipelineState = nullptr;
-// Ponteiros do Vertex Buffer
+// Pointers of the Vertex Buffer
 ID3D12Resource* g_vertexBuffer = nullptr;
 D3D12_VERTEX_BUFFER_VIEW g_vertexBufferView = {};
-// --- Funções ---
-// Função para processar imagens
+// --- Functions for process images ---
 __attribute__((always_inline)) LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     if (uMsg == WM_DESTROY) {
         PostQuitMessage(0);
@@ -52,7 +50,7 @@ __attribute__((always_inline)) LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg,
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 } 
-// Função que carrega, compila e mostra Erros de Sintaxe caso o HLSL tenha algum problema
+// Function Characteristics: Compile, in cases of errors, show the errors.
 HRESULT CompileShaderFromFile(const WCHAR* filename, LPCSTR entryPoint, LPCSTR profile, ID3DBlob** blobOut) {
   ID3DBlob* errorBlob = nullptr;
   HRESULT hr = D3DCompileFromFile(
@@ -68,14 +66,14 @@ HRESULT CompileShaderFromFile(const WCHAR* filename, LPCSTR entryPoint, LPCSTR p
   );
   if (FAILED(hr) && errorBlob) {
     OutputDebugStringA((char*)errorBlob->GetBufferPointer());
-    MessageBoxA(nullptr, (char*)errorBlob->GetBufferPointer(), "Erro de Compilacao HLSL", MB_OK | MB_ICONERROR);
+    MessageBoxA(nullptr, (char*)errorBlob->GetBufferPointer(), "Error: Compilation HLSL", MB_OK | MB_ICONERROR);
     errorBlob->Release();
   }
   return hr;
 }
 // Função Principal
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) { 
-// Registrando...
+// Registers
 WNDCLASSEXW wcx = {};
 wcx.cbSize = sizeof(WNDCLASSEXW);
 wcx.style = CS_HREDRAW | CS_VREDRAW;
@@ -85,10 +83,10 @@ wcx.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(101));
 wcx.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(101));
 wcx.lpszClassName = L"QMX_Engine_Class";
 if (!RegisterClassExW(&wcx)) {
-  MessageBoxW(nullptr, L"Falha ao registrar a classe da janela!", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Error: Registers the class!", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
-// Renderizar a Janelinha!
+// Show the Window
 HWND hwnd = CreateWindowExW(
             0,
             L"QMX_Engine_Class",
@@ -99,36 +97,36 @@ HWND hwnd = CreateWindowExW(
             nullptr, nullptr, hInstance, nullptr
 );
 if (hwnd == nullptr) {
-    MessageBoxW(nullptr, L"Falha ao criar a janela!", L"Erro QMX", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, L"Error: Failed in create the Window!", L"QMX Error", MB_OK | MB_ICONERROR);
     return 0;
 }
-// Para aparecer o ícone personalizado
+// Show the Icon Personalized
 HICON hIconLarge = (HICON)LoadImageW(hInstance, MAKEINTRESOURCE(101), IMAGE_ICON, 32, 32, LR_SHARED);
 HICON hIconSmall = (HICON)LoadImageW(hInstance, MAKEINTRESOURCE(101), IMAGE_ICON, 16, 16, LR_SHARED);
 SendMessageW(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIconLarge);
 SendMessageW(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconSmall);
-// E finalmente, renderiza a Janelinha
+// Show the Window
 ShowWindow(hwnd, nCmdShow);
-// 1. Criar a Fábrica DXGI 
+// 1. Create the DXGI
 if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&g_factory)))) {
-    MessageBoxW(nullptr, L"Falha no Passo 1: CreateDXGIFactory1", L"Erro QMX", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, L"Failed in 1 step: CreateDXGIFactory1", L"QMX Error", MB_OK | MB_ICONERROR);
     return 0;
 }
-// 2. Criar o Dispositivo apontando para a Intel UHD
+// 2. Create the device: GPU
 if (FAILED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&g_device)))) {
-    MessageBoxW(nullptr, L"Falha no Passo 2: D3D12CreateDevice", L"Erro QMX", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, L"Failed in 2 step: D3D12CreateDevice", L"QMX Error", MB_OK | MB_ICONERROR);
     return 0;
 }
-// 3. Configurar e criar a Fila de Comandos
+// 3. Configurations and create: Command Queue
 D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 queueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
 queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 if (FAILED(g_device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&g_cmdQueue)))) {
-    MessageBoxW(nullptr, L"Falha no Passo 3: CreateCommandQueue", L"Erro QMX", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, L"Failed in 3 step: CreateCommandQueue", L"QMX Error", MB_OK | MB_ICONERROR);
     return 0;
 }
-// 4. Configurar a Swap Chain
+// 4. Configurations: Swap Chain
 DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 swapChainDesc.BufferCount = 2;
 swapChainDesc.Width = 1280;
@@ -137,67 +135,67 @@ swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 swapChainDesc.SampleDesc.Count = 1;
-// Criamos uma interface temporária-base para receber o Objeto do Windows
+// Create a base-temporary interface
 IDXGISwapChain1* tmpSwapChain = nullptr;
 if (FAILED(g_factory->CreateSwapChainForHwnd(g_cmdQueue, hwnd, &swapChainDesc, nullptr, nullptr, &tmpSwapChain))) {
-  MessageBoxW(nullptr, L"Falha no Passo 4: CreateSwapChainForHwnd", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in Step 4: CreateSwapChainForHwnd", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
-// Fazemos o Molde
+// Create the Interface
 if (FAILED(tmpSwapChain->QueryInterface(IID_PPV_ARGS(&g_swapChain)))) {
-  MessageBoxW(nullptr, L"Falha no Passo 4: QueryInterface SwapChain3", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 4 step: QueryInterface SwapChain3", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
-// Liberamos o Ponteiro
+// Liberations: Pointer
 tmpSwapChain->Release();
-// 5. Criar heap de Descritores para o RTV
+// 5. Create the Descriptors Heap for RTV
 D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 rtvHeapDesc.NumDescriptors = 2;
 rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 if (FAILED(g_device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&g_rtvHeap)))) {
-  MessageBoxW(nullptr, L"Falha no Passo 5: CreateDescriptorHeap", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 5 step: CreateDescriptorHeap", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
 g_rtvDescriptorSize = g_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-// 6. Criar as visões (RTV) para cada Buffer da Swap Chain
+// 6. Create the RTV for GPU
 D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle(g_rtvHeap->GetCPUDescriptorHandleForHeapStart());
 for (UINT i = 0; i < 2; i++) {
   if (FAILED(g_swapChain->GetBuffer(i, IID_PPV_ARGS(&g_renderTargets[i])))) {
-    MessageBoxW(nullptr, L"Falha no Passo 6: GetBuffer da SwapChain", L"Erro QMX", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, L"Failed in 6 step: GetBuffer SwapChain", L"QMX Error", MB_OK | MB_ICONERROR);
     return 0;
   }
   g_device->CreateRenderTargetView(g_renderTargets[i], nullptr, rtvHandle);
   rtvHandle.ptr += g_rtvDescriptorSize;
 }
-// 7. Criar alocador e lista de comandos
+// 7. Create the Allocator and List Commands
 if (FAILED(g_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&g_cmdAllocator)))) {
-  MessageBoxW(nullptr, L"Falha no Passo 7: CreateCommandAllocator", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 7 step: CreateCommandAllocator", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
 if (FAILED(g_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, g_cmdAllocator, nullptr, IID_PPV_ARGS(&g_cmdList)))) {
-  MessageBoxW(nullptr, L"Falha no Passo 7: CreateCommandList", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 7 step: CreateCommandList", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
-g_cmdList->Close();  // Permanece fechada até entrar no loop
-// 8. Criar Fence para controlar a Intel UHD
+g_cmdList->Close();  // Closed
+// 8. Create to control the GPU
 if (FAILED(g_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&g_fence)))) {
-  MessageBoxW(nullptr, L"Falha no Passo 8: CreateFence", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 8 step: CreateFence", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
 g_fenceEvent = CreateEventEx(nullptr, FALSE, FALSE, EVENT_ALL_ACCESS);
-// 9. Compila em Tempo de Execução os Shaders
+// 9. Compile the Shaders
 // Compila o Vertex Shader
 if (FAILED(CompileShaderFromFile(L".\\shaders.hlsl", "VSMain", "vs_5_0", &g_vsBlob))) {
-  MessageBoxW(nullptr, L"Falha no Passo 9: Nao foi possivel carregar ou compilar o Vertex Shader em .\\shaders.hlsl", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 9 Step: Compile the Vertex Shader", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
 // Compila o Pixel Shader
 if (FAILED(CompileShaderFromFile(L".\\shaders.hlsl", "PSMain", "ps_5_0", &g_psBlob))) {
-  MessageBoxW(nullptr, L"Falha no Passo 9: Nao foi possivel carregar ou compilar o Pixel Shader em .\\shaders.hlsl", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 9 Step: Compile the Pixel Shader", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
-// 10. Criar a Root Signature Vazia (por enquanto)
+// 10. Create the Root Signature
 D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 rootSignatureDesc.NumParameters = 0;
 rootSignatureDesc.pParameters = nullptr;
@@ -208,26 +206,26 @@ ID3DBlob* signature = nullptr;
 ID3DBlob* error = nullptr;
 if (FAILED(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error))) {
   if (error) error->Release();
-  MessageBoxW(nullptr, L"Falha no Passo 10: D3D12SerializeRootSignature", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 10 Step: D3D12SerializeRootSignature", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
 if (FAILED(g_device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&g_rootSignature)))) {
   signature->Release();
-  MessageBoxW(nullptr, L"Falha no Passo 10: CreateRootSignature", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 10 Step: CreateRootSignature", L"QMX Error", MB_OK | MB_ICONERROR);
   return 0;
 }
-// 11. Definir o Layout de Entrada correspondente ao HLSL 
+// 11. Define the Layout: HLSL Specification of shaders.hlsl
 D3D12_INPUT_ELEMENT_DESC inputElementDescs[] = {
   { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
   { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 };
-// 12. Criar o Pipeline State Object (PSO)
+// 12. Create the Pipeline State Object (PSO)
 D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
 psoDesc.pRootSignature = g_rootSignature;
 psoDesc.VS = { g_vsBlob->GetBufferPointer(), g_vsBlob->GetBufferSize() };
 psoDesc.PS = { g_psBlob->GetBufferPointer(), g_psBlob->GetBufferSize() };
-// Configuração Padrão do Rasterizer (sem CD3DX12)
+// Default Configuration of Rasterizer
 psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 psoDesc.RasterizerState.FrontCounterClockwise = FALSE;
@@ -239,7 +237,7 @@ psoDesc.RasterizerState.MultisampleEnable = FALSE;
 psoDesc.RasterizerState.AntialiasedLineEnable = FALSE;
 psoDesc.RasterizerState.ForcedSampleCount = 0;
 psoDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-// Configuração Padrão do BlendState (sem CD3DX12)
+// Default Configuration of BlendState 
 psoDesc.BlendState.AlphaToCoverageEnable = FALSE;
 psoDesc.BlendState.IndependentBlendEnable = FALSE;
 psoDesc.BlendState.RenderTarget[0].BlendEnable = FALSE;
@@ -260,17 +258,17 @@ psoDesc.NumRenderTargets = 1;
 psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 psoDesc.SampleDesc.Count = 1;
 if (FAILED(g_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&g_pipelineState)))) {
-  MessageBoxW(nullptr, L"Falha no Passo 12: CreateGraphicsPipelineState", L"Erro QMX", MB_OK | MB_ICONERROR);
+  MessageBoxW(nullptr, L"Failed in 12 Step: CreateGraphicsPipelineState", L"Erro QMX", MB_OK | MB_ICONERROR);
   return 0;
 }
-// 13. Definir os vértices do Triângulo (NDC: -1.0 a 1.0)
+// 13. Define: Triangle Vertex (NDC: -1.0 a 1.0)
 Vertex triangleVertices[] = {
-    { {  0.0f,   0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } }, // Topo (Vermelho)
-    { {  0.5f,  -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } }, // Direita (Verde)
-    { { -0.5f,  -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }  // Esquerda (Azul)
+    { {  0.0f,   0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } }, 
+    { {  0.5f,  -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } }, 
+    { { -0.5f,  -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }  
 };
 const UINT vertexBufferSize = sizeof(triangleVertices);
-// Configuração do Heap de Upload
+// Configuration of Upload Heap
 D3D12_HEAP_PROPERTIES heapProps = {};
 heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
 D3D12_RESOURCE_DESC bufferDesc = {};
@@ -282,7 +280,7 @@ bufferDesc.MipLevels = 1;
 bufferDesc.Format = DXGI_FORMAT_UNKNOWN;
 bufferDesc.SampleDesc.Count = 1;
 bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-// Cria o Recurso de Memória na GPU
+// Create the Memory Resource in GPU
 if (FAILED(g_device->CreateCommittedResource(
     &heapProps,
     D3D12_HEAP_FLAG_NONE,
@@ -290,53 +288,53 @@ if (FAILED(g_device->CreateCommittedResource(
     D3D12_RESOURCE_STATE_GENERIC_READ,
     nullptr,
     IID_PPV_ARGS(&g_vertexBuffer)))) {
-    MessageBoxW(nullptr, L"Falha no Passo 13: CreateCommittedResource do Vertex Buffer", L"Erro QMX", MB_OK | MB_ICONERROR);
+    MessageBoxW(nullptr, L"Failed in 13 Step: CreateCommittedResource -> Vertex Buffer", L"QMX Error", MB_OK | MB_ICONERROR);
     return 0;
 }
-// Copia os dados da CPU para a GPU via Map/Unmap
+// Copy the dates of CPU in GPU using Map/Unmap
 UINT8* pVertexDataBegin = nullptr;
 D3D12_RANGE readRange = { 0, 0 };
 g_vertexBuffer->Map(0, &readRange, reinterpret_cast<void**>(&pVertexDataBegin));
 memcpy(pVertexDataBegin, triangleVertices, sizeof(triangleVertices));
 g_vertexBuffer->Unmap(0, nullptr);
-// Cria a Visão do Vertex Buffer (VBV)
+// Create the VBV
 g_vertexBufferView.BufferLocation = g_vertexBuffer->GetGPUVirtualAddress();
 g_vertexBufferView.StrideInBytes = sizeof(Vertex);
 g_vertexBufferView.SizeInBytes = vertexBufferSize;
-// --- Inicializa a Frequência do Relógio do Sistema e o Tempo Inicial ---
+// --- Inicialization: Initials Frequency and Time ---
 QueryPerformanceFrequency(&g_timerFrequency);
 QueryPerformanceCounter(&g_lastTime);
-// Loop Principal
+// Principal Loop
 MSG msg = {};
   while (msg.message != WM_QUIT) {
     if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
     } else {
-      // --- CÁLCULO DE DELTATIME E FPS ---
+      // --- DeltaTime and FPS ---
       LARGE_INTEGER currentTime;
       QueryPerformanceCounter(&currentTime);
-      // DeltaTime em Segundos (Ex. 0.166s para 60 FPS)
+      // DeltaTime in seconds (e.g: 0.166s -> 60 FPS)
       g_deltaTime = static_cast<float>(currentTime.QuadPart - g_lastTime.QuadPart) / static_cast<float>(g_timerFrequency.QuadPart);
       g_lastTime = currentTime;
-      // Acumulador de FPS
+      // FPS Accumulator
       g_fpsFrameCount++;
       g_fpsTimeAccumulator += g_deltaTime;
-      // Atualiza o Título da Janela a cada 1 segundo com a média de FPS
+      // Atualization: Window for DeltaTime and FPS
       if (g_fpsTimeAccumulator >= 1.0f) {
         g_currentFPS = static_cast<float>(g_fpsFrameCount) / g_fpsTimeAccumulator;
-        std::wstring windowTitle = L"QMX Engine v0.1 | FPS: " + std::to_wstring(static_cast<int>(g_currentFPS)) + L" | DeltaTime: " + std::to_wstring(g_deltaTime * 100.0f).substr(0, 5) + L" ms";
+        std::wstring windowTitle = L"QMX Engine v0.1 | FPS: " + std::to_wstring(static_cast<int>(g_currentFPS)) + L" | DeltaTime: " + std::to_wstring(g_deltaTime * 1000.0f).substr(0, 5) + L" ms";
         SetWindowTextW(hwnd, windowTitle.c_str());
         g_fpsFrameCount = 0;
         g_fpsTimeAccumulator = 0.0f;
       }
-      // --- RENDERIZAÇÃO DIRECTX 12 ---
-      // Pega o índice do buffer atual da GPU
+      // --- Renderization: DirectX 12 ---
+      // Get the Atual Index of Buffer
       g_frameIndex = g_swapChain->GetCurrentBackBufferIndex();
-      // prepara a gravação de comandos
+      // Preparing the gravation of commands
       g_cmdAllocator->Reset();
       g_cmdList->Reset(g_cmdAllocator, nullptr);
-      // Transição: De PRESENT -> RENDER_TARGET (para a GPU desenhar)
+      // Transition: PRESENT -> RENDER_TARGET
       D3D12_RESOURCE_BARRIER barrier = {};
       barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
       barrier.Transition.pResource = g_renderTargets[g_frameIndex];
@@ -344,14 +342,14 @@ MSG msg = {};
       barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
       barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
       g_cmdList->ResourceBarrier(1, &barrier);
-      // Pega o Ponteiro do Buffer na Memória
+      // Get the Buffer Pointer in Memory
       D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle(g_rtvHeap->GetCPUDescriptorHandleForHeapStart());
       rtvHandle.ptr += g_frameIndex * g_rtvDescriptorSize;
-      // Limpa a Tela com a Cor Selecionada (RGBA: Roxo Escuro)
+      // Clear the Screen with selecioned color
       const FLOAT clearColor[] = { 0.1f, 0.05f, 0.2f, 1.0f };
       g_cmdList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
       g_cmdList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-      // --- COMANDOS DE RENDERIZAÇÃO DO TRIÂNGULO ---
+      // --- Renderization Commands: Triangle---
       D3D12_VIEWPORT viewport = { 0.0f, 0.0f, 1280.0f, 720.0f, 0.0f, 1.0f };
       D3D12_RECT scissorRect = { 0, 0, 1280, 720 };
       g_cmdList->RSSetViewports(1, &viewport);
@@ -360,19 +358,19 @@ MSG msg = {};
       g_cmdList->SetPipelineState(g_pipelineState);
       g_cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
       g_cmdList->IASetVertexBuffers(0, 1, &g_vertexBufferView);
-      // Desenha o Triângulo
+      // Show the Triangle
       g_cmdList->DrawInstanced(3, 1, 0, 0);
-      // Transição: De RENDER_TARGET -> PRESENT (Para o Windows poder mostrar na Tela)
+      // Transition: RENDER_TARGET -> PRESENT (for Windows show in Screen)
       barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
       barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
       g_cmdList->ResourceBarrier(1, &barrier);
-      // Finaliza e manda a Lista para a Intel UHD
+      // Finalization: List -> GPU
       g_cmdList->Close();
       ID3D12CommandList* ppCmdLists[] = { g_cmdList };
       g_cmdQueue->ExecuteCommandLists(1, ppCmdLists);
-      // Exibe o Quadro na Tela com V-Sync ligado
+      // V-Sync actived
       g_swapChain->Present(1, 0);
-      // SINCRONIZAÇÃO (espera a GPU terminar antes de ir pro próximo quadro)
+      // SINCRONIZATION
       const UINT64 fenceToWait = ++g_fenceValue;
       g_cmdQueue->Signal(g_fence, fenceToWait);
       if (g_fence->GetCompletedValue() < fenceToWait) {
@@ -381,6 +379,6 @@ MSG msg = {};
       }
     }
   }
-  // Fim do QMX
+  // QMX End
   return 0;
 }

@@ -46,6 +46,19 @@
 
 ---
 
+## Critic Files
+
+### What is files?
+  * **README: The README.md, is permitted modify this.**
+  * **The main: The main.cpp, modify this NO resolving a problem is canceled the Pull Request.**
+  * **Resources Table: The resource.rc, is much critic, is permitted modify if modify the main.cpp.**
+  * **Build: build.bat Is much critic, NOT permissions of modify.**
+  * **Make: The Makefile is small critic, all permissions of modify. But, NOT remove this file.**
+  * **Git Ignore: The .gitignore is much critic, controlling what File is ignored for Git/Github. NOT Permissions.**
+  * **Notes: In .gitignore or build.bat, I´m have ALL PERMISSIONS of modify.**
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -62,8 +75,8 @@ git clone https://github.com/dev12124/QMX.git
 cd QMX
 
 # Git workflow examples
-git branch feature/novo-recurso
-git checkout feature/novo-recurso
+git branch feature/new-resource
+git checkout feature/new-resource
 git commit -m "feat: add index buffer rendering"
 git request-pull
 
